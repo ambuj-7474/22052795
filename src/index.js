@@ -11,21 +11,17 @@ const app = express();
 const PORT = parseInt(process.env.PORT) || 9876;
 const WINDOW_SIZE = 10;
 
-// Check if access token is configured
 if (!process.env.ACCESS_TOKEN) {
   console.error('ERROR: ACCESS_TOKEN not configured in .env file');
   process.exit(1);
 }
 
-// Initialize number store
 const numberStore = new NumberStore(WINDOW_SIZE);
 
-// Middleware
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Numbers endpoint
 app.get('/numbers/:numberid', async (req, res) => {
   const { numberid } = req.params;
   const validTypes = ['p', 'f', 'e', 'r'];
@@ -35,16 +31,9 @@ app.get('/numbers/:numberid', async (req, res) => {
   }
 
   try {
-    // Store current state before fetching new numbers
     const windowPrevState = [...numberStore.getNumbers()];
-
-    // Fetch numbers with timeout
     const numbers = await fetchNumbers(numberid);
-    
-    // Update store with new unique numbers
     numbers.forEach(num => numberStore.addNumber(num));
-    
-    // Calculate average
     const currentNumbers = numberStore.getNumbers();
     const avg = currentNumbers.length > 0 
       ? (currentNumbers.reduce((sum, num) => sum + num, 0) / currentNumbers.length).toFixed(2)
@@ -62,7 +51,6 @@ app.get('/numbers/:numberid', async (req, res) => {
   }
 });
 
-// Function to try different ports
 const startServer = (port) => {
   try {
     app.listen(port, () => {
@@ -80,5 +68,4 @@ const startServer = (port) => {
   }
 };
 
-// Start the server
 startServer(PORT);
